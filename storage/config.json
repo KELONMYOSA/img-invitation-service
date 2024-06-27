@@ -1,32 +1,92 @@
 {
     "presets": [
         {
-            "name": "invitation_1",
-            "template": "template1.png",
+            "name": "plan_pobeg",
+            "template": "plan_pobeg.jpg",
             "texts": [
                 {
-                    "name": "date",
-                    "x": 50,
-                    "y": 100,
+                    "type": "date",
+                    "x": 1610,
+                    "y": 1060,
                     "font": "Arial.ttf",
-                    "size": 20,
-                    "color": "black"
+                    "size": 80,
+                    "color": "#16FF26"
                 },
                 {
-                    "text": "time",
-                    "x": 50,
-                    "y": 150,
-                    "font": "Arial.ttf",
-                    "size": 20,
-                    "color": "black"
+                    "type": "time",
+                    "x": 1750,
+                    "y": 1200,
+                    "font": "Comic Sans MS.ttf",
+                    "size": 90,
+                    "color": "#FF2845"
                 },
                 {
-                    "text": "address",
-                    "x": 50,
-                    "y": 200,
+                    "type": "address",
+                    "x": 1000,
+                    "y": 1430,
+                    "font": "Times New Roman.ttf",
+                    "size": 60,
+                    "color": "#2D38FF"
+                }
+            ]
+        },
+        {
+            "name": "korabl_prizrak",
+            "template": "korabl_prizrak.jpg",
+            "texts": [
+                {
+                    "type": "date",
+                    "x": 530,
+                    "y": 1140,
                     "font": "Arial.ttf",
-                    "size": 20,
-                    "color": "black"
+                    "size": 70,
+                    "color": "#16FF26"
+                },
+                {
+                    "type": "time",
+                    "x": 630,
+                    "y": 1310,
+                    "font": "Comic Sans MS.ttf",
+                    "size": 90,
+                    "color": "#FF2845"
+                },
+                {
+                    "type": "address",
+                    "x": 1200,
+                    "y": 1450,
+                    "font": "Times New Roman.ttf",
+                    "size": 70,
+                    "color": "#2D38FF"
+                }
+            ]
+        },
+        {
+            "name": "zamok_drakuli",
+            "template": "zamok_drakuli.jpg",
+            "texts": [
+                {
+                    "type": "date",
+                    "x": 3150,
+                    "y": 2020,
+                    "font": "Arial.ttf",
+                    "size": 120,
+                    "color": "#16FF26"
+                },
+                {
+                    "type": "time",
+                    "x": 3410,
+                    "y": 2270,
+                    "font": "Comic Sans MS.ttf",
+                    "size": 120,
+                    "color": "#FF2845"
+                },
+                {
+                    "type": "address",
+                    "x": 1450,
+                    "y": 2510,
+                    "font": "Times New Roman.ttf",
+                    "size": 90,
+                    "color": "#2D38FF"
                 }
             ]
         }
