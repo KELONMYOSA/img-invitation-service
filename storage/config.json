@@ -1,0 +1,34 @@
+{
+    "presets": [
+        {
+            "name": "invitation_1",
+            "template": "template1.png",
+            "texts": [
+                {
+                    "name": "date",
+                    "x": 50,
+                    "y": 100,
+                    "font": "Arial.ttf",
+                    "size": 20,
+                    "color": "black"
+                },
+                {
+                    "text": "time",
+                    "x": 50,
+                    "y": 150,
+                    "font": "Arial.ttf",
+                    "size": 20,
+                    "color": "black"
+                },
+                {
+                    "text": "address",
+                    "x": 50,
+                    "y": 200,
+                    "font": "Arial.ttf",
+                    "size": 20,
+                    "color": "black"
+                }
+            ]
+        }
+    ]
+}
