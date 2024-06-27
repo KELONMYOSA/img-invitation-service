@@ -8,5 +8,10 @@ class Settings(BaseSettings):
     TEMPLATE_FOLDER: str
     FONT_FOLDER: str
 
+    SMTP_SERVER: str
+    SMTP_PORT: int
+    SMTP_USER: str
+    SMTP_PASSWORD: str
+
 
 settings = Settings()
