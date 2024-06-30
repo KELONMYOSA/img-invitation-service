@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
-from src.models.invitation import InvitationForm, InvitationResult
+from src.models.invitation import InvitationForm, InvitationResult, TestModel
 from src.utils.img_gen import create_invitation
 from src.utils.mail import send_email_with_attachment
 
@@ -10,8 +10,11 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=InvitationResult)
-async def gen_img_and_send_email(data: InvitationForm):
+@router.post("", response_model=InvitationResult | dict)
+async def gen_img_and_send_email(data: InvitationForm | TestModel):
+    if isinstance(data, TestModel):
+        return {"test": "Success"}
+
     try:
         img = create_invitation(data)
         send_email_with_attachment(data, img)

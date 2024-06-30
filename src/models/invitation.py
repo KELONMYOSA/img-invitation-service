@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class InvitationForm(BaseModel):
@@ -13,3 +13,7 @@ class InvitationResult(BaseModel):
     result: str
     invitation: str
     email: str
+
+
+class TestModel(BaseModel):
+    test: str = Field(..., pattern=r"^test$")
