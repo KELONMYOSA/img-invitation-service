@@ -1,7 +1,7 @@
 {
     "presets": [
         {
-            "name": "plan_pobeg",
+            "name": "План побег",
             "template": "plan_pobeg.jpg",
             "texts": [
                 {
@@ -31,7 +31,7 @@
             ]
         },
         {
-            "name": "korabl_prizrak",
+            "name": "Корабль призрак",
             "template": "korabl_prizrak.jpg",
             "texts": [
                 {
@@ -61,7 +61,7 @@
             ]
         },
         {
-            "name": "zamok_drakuli",
+            "name": "Замок Дракулы",
             "template": "zamok_drakuli.jpg",
             "texts": [
                 {
