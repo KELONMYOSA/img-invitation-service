@@ -5,6 +5,7 @@ class InvitationForm(BaseModel):
     type: str
     date: str
     time: str
+    city: str
     address: str
     email: str
 

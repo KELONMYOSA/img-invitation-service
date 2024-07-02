@@ -1,4 +1,28 @@
 {
+    "city2phone": {
+        "Санкт-Петербург": "8 (812) 372-97-52",
+        "Нижний Новгород": "8 (831) 214-09-39",
+        "Саратов": "8 (8452) 33-88-92",
+        "Волгоград": "8 (8442) 22-06-52",
+        "Самара": "8 (846) 231-67-01",
+        "Казань": "8 (843) 205-61-01"
+    },
+    "city2email": {
+        "Санкт-Петербург": "questguru@mail.ru",
+        "Нижний Новгород": "questgurunn@mail.ru",
+        "Саратов": "questgurusar@mail.ru",
+        "Волгоград": "questguruvlg@mail.ru",
+        "Самара": "questgurusam@mail.ru",
+        "Казань": "questgurukzn@mail.ru"
+    },
+    "city2vk": {
+        "Санкт-Петербург": "https://vk.com/questguru",
+        "Нижний Новгород": "https://vk.com/questgurunn",
+        "Саратов": "https://vk.com/questgurusar",
+        "Волгоград": "https://vk.com/questguruvlg",
+        "Самара": "https://vk.com/questgurusam",
+        "Казань": "https://vk.com/questgurukzn"
+    },
     "presets": [
         {
             "name": "План побег",

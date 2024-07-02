@@ -16,6 +16,7 @@ async def gen_img_and_send_email(
     type: str | None = Form(None),
     date: str | None = Form(None),
     time: str | None = Form(None),
+    city: str | None = Form(None),
     address: str | None = Form(None),
     email: str | None = Form(None),
     test: str | None = Form(None),
@@ -24,7 +25,7 @@ async def gen_img_and_send_email(
         return {"test": "Success"}
     elif all((type, date, time, address, email)):
         try:
-            data = InvitationForm(type=type, date=date, time=time, address=address, email=email)
+            data = InvitationForm(type=type, date=date, time=time, city=city, address=address, email=email)
             img = create_invitation(data)
             send_email_with_attachment(data, img)
         except ValueError as e:
