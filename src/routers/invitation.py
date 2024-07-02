@@ -1,7 +1,7 @@
-
-from fastapi import APIRouter, Form, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, status
 
 from src.models.invitation import InvitationForm, InvitationResult
+from src.utils.auth import verify_api_key
 from src.utils.img_gen import create_invitation
 from src.utils.mail import send_email_with_attachment
 
@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=InvitationResult | dict)
+@router.post("", response_model=InvitationResult | dict, dependencies=[Depends(verify_api_key)])
 async def gen_img_and_send_email(
     type: str | None = Form(None),
     date: str | None = Form(None),
