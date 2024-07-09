@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, status, Request
 
 from src.models.invitation import InvitationForm, InvitationResult
 from src.utils.auth import verify_api_key
@@ -13,14 +13,22 @@ router = APIRouter(
 
 @router.post("", response_model=InvitationResult | dict, dependencies=[Depends(verify_api_key)])
 async def gen_img_and_send_email(
+    request: Request,
     type: str | None = Form(None),
     date: str | None = Form(None),
     time: str | None = Form(None),
     city: str | None = Form(None),
-    address: str | None = Form(None),
     email: str | None = Form(None),
     test: str | None = Form(None),
 ):
+    form = await request.form()
+
+    address = None
+    for key in form.keys():
+        if key.startswith("address"):
+            address = form[key]
+            break
+
     if test == "test":
         return {"test": "Success"}
     elif all((type, date, time, address, email)):
