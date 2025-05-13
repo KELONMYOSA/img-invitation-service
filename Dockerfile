@@ -1,6 +1,7 @@
 FROM python:3.11-slim as builder
 
 RUN pip install poetry
+RUN poetry self add poetry-plugin-export
 
 COPY pyproject.toml poetry.lock ./
 
