@@ -24,7 +24,7 @@ async def gen_img_and_send_email(
     form = await request.form()
 
     address = None
-    for key in form.keys():
+    for key in form:
         if key.startswith("address"):
             address = form[key]
             break
@@ -38,8 +38,10 @@ async def gen_img_and_send_email(
             send_email_with_attachment(data, img)
         except ValueError as e:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))  # noqa: B904
-        except FileNotFoundError as e:
+        except (RuntimeError, FileNotFoundError) as e:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))  # noqa: B904
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")  # noqa: B904
         return InvitationResult(result="Invitation created", invitation=data.type, email=data.email)
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid data format")

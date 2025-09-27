@@ -63,6 +63,17 @@ def send_email_with_attachment(invitation_data: InvitationForm, attachment: byte
     except FileNotFoundError as e:
         raise FileNotFoundError("Email logo not found: " + str(e))  # noqa: B904
 
-    with smtplib.SMTP_SSL(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
-        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-        server.sendmail(settings.SMTP_USER, invitation_data.email, msg.as_string())
+    try:
+        with smtplib.SMTP_SSL(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
+            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+            server.sendmail(settings.SMTP_USER, invitation_data.email, msg.as_string())
+    except smtplib.SMTPRecipientsRefused as e:
+        raise ValueError(f"Email delivery failed: recipient refused - {e}")  # noqa: B904
+    except smtplib.SMTPDataError as e:
+        raise ValueError(f"Email delivery failed: invalid mailbox or user not found - {e}")  # noqa: B904
+    except smtplib.SMTPAuthenticationError:
+        raise RuntimeError("SMTP authentication failed")  # noqa: B904
+    except smtplib.SMTPException as e:
+        raise RuntimeError(f"SMTP error occurred: {e}")  # noqa: B904
+    except Exception as e:
+        raise RuntimeError(f"Unexpected error sending email: {e}")  # noqa: B904
