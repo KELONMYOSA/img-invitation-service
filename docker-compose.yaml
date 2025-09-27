@@ -1,6 +1,12 @@
-version: "3.9"
-
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: img-invitation-redis
+    restart: unless-stopped
+    networks:
+      - img-invitation-network
+    command: redis-server --appendonly yes
+
   backend:
     image: img-invitation-backend
     container_name: img-invitation-backend
@@ -8,3 +14,22 @@ services:
     ports:
       - "80:80"
     restart: unless-stopped
+    depends_on:
+      - redis
+    networks:
+      - img-invitation-network
+
+  celery-worker:
+    image: img-invitation-backend
+    container_name: img-invitation-celery-worker
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - redis
+    networks:
+      - img-invitation-network
+    command: celery -A src.celery_app worker --loglevel=info
+
+networks:
+  img-invitation-network:
+    driver: bridge

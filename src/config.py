@@ -15,5 +15,6 @@ class Settings(BaseSettings):
     SMTP_USER: str
     SMTP_PASSWORD: str
 
+    REDIS_URL: str = "redis://redis:6379/0"
 
 settings = Settings()

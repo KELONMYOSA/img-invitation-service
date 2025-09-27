@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, status, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 
+from src.celery_app import celery_app
 from src.models.invitation import InvitationForm, InvitationResult
 from src.utils.auth import verify_api_key
-from src.utils.img_gen import create_invitation
-from src.utils.mail import send_email_with_attachment
 
 router = APIRouter(
     prefix="/invitation",
@@ -34,14 +33,11 @@ async def gen_img_and_send_email(
     elif all((type, date, time, address, email)):
         try:
             data = InvitationForm(type=type, date=date, time=time, city=city, address=address, email=email)
-            img = create_invitation(data)
-            send_email_with_attachment(data, img)
+            celery_app.send_task("generate_invitation_task", args=[data.model_dump()])
+            return InvitationResult(result="Invitation task created", invitation=data.type, email=data.email)
         except ValueError as e:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))  # noqa: B904
-        except (RuntimeError, FileNotFoundError) as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))  # noqa: B904
         except Exception as e:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")  # noqa: B904
-        return InvitationResult(result="Invitation created", invitation=data.type, email=data.email)
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid data format")

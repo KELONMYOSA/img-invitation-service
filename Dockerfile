@@ -19,4 +19,4 @@ COPY src /app/src
 COPY storage /app/storage
 COPY .env main.py /app/
 
-ENTRYPOINT ["python", "main.py"]
+CMD ["python", "main.py"]
