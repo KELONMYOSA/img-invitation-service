@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.routers import invitation
+from src.routers import config_editor, invitation
 
 app = FastAPI(
     title="Image generating API",
@@ -24,6 +24,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(invitation.router)
+app.include_router(config_editor.router)
 
 if __name__ == "__main__":
     host = "0.0.0.0"

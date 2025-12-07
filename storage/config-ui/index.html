@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройка config.json</title>
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
+        h2 { margin-top: 32px; }
+        fieldset { border: 1px solid #ccc; padding: 12px; margin: 12px 0; }
+        label { display: block; margin: 6px 0 4px; }
+        input, select { padding: 6px 8px; width: 100%; box-sizing: border-box; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .actions { display: flex; gap: 8px; margin-top: 8px; }
+        button { padding: 8px 12px; cursor: pointer; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f6f6f6; text-align: left; }
+        .small { font-size: 12px; color: #666; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .muted { color: #666; }
+        .pill { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 2px 6px; border-radius: 999px; margin-left: 6px; font-size: 12px; }
+        .danger { color: #b91c1c; }
+        .success { color: #166534; }
+        /* Tabs */
+        .tabs { display: flex; gap: 8px; border-bottom: 1px solid #e5e7eb; margin: 16px 0; }
+        .tab { background: #f8fafc; border: 1px solid #e5e7eb; border-bottom: none; padding: 8px 12px; cursor: pointer; }
+        .tab.active { background: #fff; border-bottom: 1px solid #fff; font-weight: 600; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .topbar .right { display: flex; gap: 8px; align-items: center; }
+    </style>
+</head>
+<body>
+    <h1>Страница настройки config.json</h1>
+
+    <!-- Auth view -->
+    <div id="authView">
+        <fieldset>
+            <legend>Авторизация</legend>
+            <label>API Key</label>
+            <input id="authApiKey" type="text" placeholder="Введите API Key">
+            <div class="actions">
+                <button onclick="login()">Войти</button>
+            </div>
+            <div class="small muted">Ключ будет сохранён локально. Заголовок запроса: <code>api-key</code></div>
+            <div id="authStatus" class="small"></div>
+        </fieldset>
+    </div>
+
+    <!-- App view -->
+    <div id="appView" style="display:none">
+        <div class="topbar">
+            <div class="muted small">Вы авторизованы</div>
+            <div class="right">
+                <button onclick="logout()">Сменить ключ</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="cities" onclick="switchTab('cities')">Города</button>
+            <button class="tab" data-tab="fonts" onclick="switchTab('fonts')">Шрифты</button>
+            <button class="tab" data-tab="templates" onclick="switchTab('templates')">Шаблоны</button>
+            <button class="tab" data-tab="presets" onclick="switchTab('presets')">Пресеты</button>
+        </div>
+
+        <div id="tab-cities" class="tab-pane active">
+            <h2>Города</h2>
+            <div class="row">
+                <fieldset>
+                    <legend>Добавить/обновить город</legend>
+                    <label>Город</label>
+                    <input id="cityName" type="text" placeholder="Например: Санкт-Петербург">
+                    <label>Телефон</label>
+                    <input id="cityPhone" type="text" placeholder="8 (812) 372-97-52">
+                    <label>Почта</label>
+                    <input id="cityEmail" type="email" placeholder="questguru@mail.ru">
+                    <label>Ссылка VK</label>
+                    <input id="cityVk" type="text" placeholder="https://vk.com/questguru">
+                    <div class="actions">
+                        <button onclick="saveCity()">Сохранить</button>
+                        <button onclick="clearCityForm()">Очистить</button>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Список городов</legend>
+                    <table>
+                        <thead><tr><th>Город</th><th>Телефон</th><th>Почта</th><th>VK</th><th></th></tr></thead>
+                        <tbody id="citiesTbody"></tbody>
+                    </table>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="tab-fonts" class="tab-pane">
+            <h2>Шрифты</h2>
+            <div class="row">
+                <fieldset>
+                    <legend>Загрузить шрифт</legend>
+                    <input id="fontFile" type="file" accept=".ttf,.otf,.ttc,.woff,.woff2">
+                    <div class="actions">
+                        <button onclick="uploadFont()">Загрузить</button>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Список шрифтов</legend>
+                    <ul id="fontsList"></ul>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="tab-templates" class="tab-pane">
+            <h2>Шаблоны (картинки)</h2>
+            <div class="row">
+                <fieldset>
+                    <legend>Загрузить картинку</legend>
+                    <input id="tplFile" type="file" accept=".jpg,.jpeg,.png">
+                    <div class="actions">
+                        <button onclick="uploadTemplate()">Загрузить</button>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Список картинок</legend>
+                    <ul id="templatesList"></ul>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="tab-presets" class="tab-pane">
+            <h2>Пресеты</h2>
+            <fieldset>
+                <legend>Добавить/обновить пресет</legend>
+                <label>Название пресета</label>
+                <input id="presetName" type="text" placeholder="Например: План побег">
+                <label>Картинка (из существующих)</label>
+                <select id="presetTemplate"></select>
+                <div class="grid-3">
+                    <div>
+                        <h3>date <span class="pill">обяз.</span></h3>
+                        <label>X</label><input id="dateX" type="number" value="0">
+                        <label>Y</label><input id="dateY" type="number" value="0">
+                        <label>Шрифт</label><select id="dateFont"></select>
+                        <label>Размер</label><input id="dateSize" type="number" value="40" min="1">
+                        <label>Цвет</label><input id="dateColor" type="text" value="#000000">
+                    </div>
+                    <div>
+                        <h3>time <span class="pill">обяз.</span></h3>
+                        <label>X</label><input id="timeX" type="number" value="0">
+                        <label>Y</label><input id="timeY" type="number" value="0">
+                        <label>Шрифт</label><select id="timeFont"></select>
+                        <label>Размер</label><input id="timeSize" type="number" value="40" min="1">
+                        <label>Цвет</label><input id="timeColor" type="text" value="#000000">
+                    </div>
+                    <div>
+                        <h3>address <span class="pill">обяз.</span></h3>
+                        <label>X</label><input id="addressX" type="number" value="0">
+                        <label>Y</label><input id="addressY" type="number" value="0">
+                        <label>Шрифт</label><select id="addressFont"></select>
+                        <label>Размер</label><input id="addressSize" type="number" value="40" min="1">
+                        <label>Цвет</label><input id="addressColor" type="text" value="#000000">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button onclick="savePreset()">Сохранить/Обновить</button>
+                    <button onclick="clearPresetForm()">Очистить</button>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Список пресетов</legend>
+                <table>
+                    <thead><tr><th>Название</th><th>Картинка</th><th>Тексты</th><th></th></tr></thead>
+                    <tbody id="presetsTbody"></tbody>
+                </table>
+            </fieldset>
+        </div>
+
+        <div id="status" class="small"></div>
+    </div>
+
+    <script>
+        const base = '/api/config/api';
+        const apiKeyStorageKey = 'config_ui_api_key';
+        const currentApiKey = () => localStorage.getItem(apiKeyStorageKey) || '';
+        const hdrs = () => currentApiKey() ? {'api-key': currentApiKey()} : {};
+        const setStatus = (msg, ok=true) => {
+            const el = document.getElementById('status');
+            el.textContent = msg;
+            el.className = ok ? 'small success' : 'small danger';
+        };
+
+        function setAuthStatus(msg, ok=true) {
+            const el = document.getElementById('authStatus');
+            el.textContent = msg;
+            el.className = ok ? 'small success' : 'small danger';
+        }
+
+        async function fetchJSON(url, opts={}) {
+            const res = await fetch(url, { ...opts, headers: { ...(opts.headers||{}), ...hdrs() }});
+            if (!res.ok) {
+                const txt = await res.text();
+                throw new Error(`${res.status}: ${txt}`);
+            }
+            return res.json();
+        }
+
+        // Auth
+        async function login() {
+            const key = (document.getElementById('authApiKey').value || '').trim();
+            if (!key) { setAuthStatus('Введите API Key', false); return; }
+            localStorage.setItem(apiKeyStorageKey, key);
+            try {
+                // Validate by requesting any protected endpoint
+                await fetchJSON(`${base}/fonts`);
+                enterAppView();
+                await loadAll();
+                setStatus('Авторизация успешна', true);
+                setAuthStatus('');
+            } catch (e) {
+                localStorage.removeItem(apiKeyStorageKey);
+                setAuthStatus('Неверный ключ или сервер недоступен', false);
+            }
+        }
+        function logout() {
+            localStorage.removeItem(apiKeyStorageKey);
+            exitAppView();
+        }
+        function enterAppView() {
+            document.getElementById('authView').style.display = 'none';
+            document.getElementById('appView').style.display = 'block';
+        }
+        function exitAppView() {
+            document.getElementById('appView').style.display = 'none';
+            document.getElementById('authView').style.display = 'block';
+            document.getElementById('status').textContent = '';
+        }
+
+        // Tabs
+        function switchTab(name) {
+            document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${name}`));
+        }
+
+        // Cities
+        async function loadCities() {
+            const data = await fetchJSON(`${base}/cities`);
+            const tbody = document.getElementById('citiesTbody');
+            tbody.innerHTML = '';
+            data.items.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${c.name}</td>
+                    <td>${c.phone||''}</td>
+                    <td>${c.email||''}</td>
+                    <td><a href="${c.vk||'#'}" target="_blank">${c.vk||''}</a></td>
+                    <td>
+                        <button onclick='fillCity(${JSON.stringify(JSON.stringify(c))})'>Ред.</button>
+                        <button onclick='delCity(${JSON.stringify(JSON.stringify(c.name))})'>Удалить</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        function fillCity(json) {
+            const c = JSON.parse(json);
+            document.getElementById('cityName').value = c.name || '';
+            document.getElementById('cityPhone').value = c.phone || '';
+            document.getElementById('cityEmail').value = c.email || '';
+            document.getElementById('cityVk').value = c.vk || '';
+        }
+        function clearCityForm() {
+            ['cityName','cityPhone','cityEmail','cityVk'].forEach(id => document.getElementById(id).value = '');
+        }
+        async function saveCity() {
+            const payload = {
+                name: document.getElementById('cityName').value.trim(),
+                phone: document.getElementById('cityPhone').value.trim(),
+                email: document.getElementById('cityEmail').value.trim(),
+                vk: document.getElementById('cityVk').value.trim(),
+            };
+            if (!payload.name) { setStatus('Укажите город', false); return; }
+            try {
+                // Try create, if exists then update
+                await fetchJSON(`${base}/cities`, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type':'application/json'} });
+                setStatus('Город добавлен');
+            } catch(e) {
+                // Update
+                await fetchJSON(`${base}/cities/${encodeURIComponent(payload.name)}`, { method: 'PUT', body: JSON.stringify(payload), headers: {'Content-Type':'application/json'} });
+                setStatus('Город обновлён');
+            }
+            await loadCities();
+        }
+        async function delCity(nameJson) {
+            const name = JSON.parse(nameJson);
+            if (!confirm(`Удалить город "${name}"?`)) return;
+            await fetchJSON(`${base}/cities/${encodeURIComponent(name)}`, { method: 'DELETE' });
+            setStatus('Город удалён');
+            await loadCities();
+        }
+
+        // Fonts
+        async function loadFonts() {
+            const data = await fetchJSON(`${base}/fonts`);
+            const ul = document.getElementById('fontsList');
+            const selects = ['dateFont','timeFont','addressFont'].map(id => document.getElementById(id));
+            ul.innerHTML = '';
+            selects.forEach(s => s.innerHTML = '');
+            data.items.forEach(f => {
+                const li = document.createElement('li');
+                li.innerHTML = `${f} <button onclick='delFont(${JSON.stringify(JSON.stringify(f))})'>Удалить</button>`;
+                ul.appendChild(li);
+                const opt1 = new Option(f, f);
+                const opt2 = new Option(f, f);
+                const opt3 = new Option(f, f);
+                selects[0].add(opt1);
+                selects[1].add(opt2);
+                selects[2].add(opt3);
+            });
+        }
+        async function uploadFont() {
+            const file = document.getElementById('fontFile').files[0];
+            if (!file) { setStatus('Выберите файл шрифта', false); return; }
+            const fd = new FormData();
+            fd.append('file', file);
+            await fetchJSON(`${base}/fonts`, { method: 'POST', body: fd });
+            setStatus('Шрифт загружен');
+            document.getElementById('fontFile').value = '';
+            await loadFonts();
+        }
+        async function delFont(fileJson) {
+            const file = JSON.parse(fileJson);
+            if (!confirm(`Удалить шрифт "${file}"?`)) return;
+            await fetchJSON(`${base}/fonts/${encodeURIComponent(file)}`, { method: 'DELETE' });
+            setStatus('Шрифт удалён');
+            await loadFonts();
+        }
+
+        // Templates
+        async function loadTemplates() {
+            const data = await fetchJSON(`${base}/templates`);
+            const ul = document.getElementById('templatesList');
+            const select = document.getElementById('presetTemplate');
+            ul.innerHTML = '';
+            select.innerHTML = '';
+            data.items.forEach(t => {
+                const li = document.createElement('li');
+                li.innerHTML = `${t} <button onclick='delTemplate(${JSON.stringify(JSON.stringify(t))})'>Удалить</button>`;
+                ul.appendChild(li);
+                const opt = new Option(t, t);
+                select.add(opt);
+            });
+        }
+        async function uploadTemplate() {
+            const file = document.getElementById('tplFile').files[0];
+            if (!file) { setStatus('Выберите файл картинки', false); return; }
+            const fd = new FormData();
+            fd.append('file', file);
+            await fetchJSON(`${base}/templates`, { method: 'POST', body: fd });
+            setStatus('Картинка загружена');
+            document.getElementById('tplFile').value = '';
+            await loadTemplates();
+        }
+        async function delTemplate(fileJson) {
+            const file = JSON.parse(fileJson);
+            if (!confirm(`Удалить картинку "${file}"?`)) return;
+            await fetchJSON(`${base}/templates/${encodeURIComponent(file)}`, { method: 'DELETE' });
+            setStatus('Картинка удалена');
+            await loadTemplates();
+        }
+
+        // Presets
+        function clearPresetForm() {
+            document.getElementById('presetName').value = '';
+            document.getElementById('presetTemplate').selectedIndex = -1;
+            ['date','time','address'].forEach(k => {
+                document.getElementById(`${k}X`).value = 0;
+                document.getElementById(`${k}Y`).value = 0;
+                document.getElementById(`${k}Size`).value = 40;
+                document.getElementById(`${k}Color`).value = '#000000';
+            });
+        }
+        function fillPreset(presetJson) {
+            const p = JSON.parse(presetJson);
+            document.getElementById('presetName').value = p.name || '';
+            document.getElementById('presetTemplate').value = p.template || '';
+            const map = {};
+            (p.texts||[]).forEach(t => { map[t.type] = t; });
+            ['date','time','address'].forEach(k => {
+                const t = map[k] || {x:0,y:0,size:40,color:'#000000',font:''};
+                document.getElementById(`${k}X`).value = t.x || 0;
+                document.getElementById(`${k}Y`).value = t.y || 0;
+                document.getElementById(`${k}Font`).value = t.font || '';
+                document.getElementById(`${k}Size`).value = t.size || 40;
+                document.getElementById(`${k}Color`).value = t.color || '#000000';
+            });
+        }
+        async function savePreset() {
+            const name = document.getElementById('presetName').value.trim();
+            const template = document.getElementById('presetTemplate').value;
+            if (!name) { setStatus('Укажите название пресета', false); return; }
+            if (!template) { setStatus('Выберите картинку', false); return; }
+            const texts = ['date','time','address'].map(k => ({
+                type: k,
+                x: parseInt(document.getElementById(`${k}X`).value || '0', 10),
+                y: parseInt(document.getElementById(`${k}Y`).value || '0', 10),
+                font: document.getElementById(`${k}Font`).value,
+                size: parseInt(document.getElementById(`${k}Size`).value || '40', 10),
+                color: document.getElementById(`${k}Color`).value.trim()
+            }));
+            const payload = { name, template, texts };
+            try {
+                await fetchJSON(`${base}/presets`, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type':'application/json'} });
+                setStatus('Пресет добавлен');
+            } catch(e) {
+                await fetchJSON(`${base}/presets/${encodeURIComponent(name)}`, { method: 'PUT', body: JSON.stringify(payload), headers: {'Content-Type':'application/json'} });
+                setStatus('Пресет обновлён');
+            }
+            await loadPresets();
+        }
+        async function delPreset(nameJson) {
+            const name = JSON.parse(nameJson);
+            if (!confirm(`Удалить пресет "${name}"?`)) return;
+            await fetchJSON(`${base}/presets/${encodeURIComponent(name)}`, { method: 'DELETE' });
+            setStatus('Пресет удалён');
+            await loadPresets();
+        }
+        async function loadPresets() {
+            const data = await fetchJSON(`${base}/presets`);
+            const tbody = document.getElementById('presetsTbody');
+            tbody.innerHTML = '';
+            data.items.forEach(p => {
+                const tr = document.createElement('tr');
+                const texts = (p.texts||[]).map(t => `${t.type}: x=${t.x}, y=${t.y}, font=${t.font}, size=${t.size}, color=${t.color}`).join('<br>');
+                tr.innerHTML = `
+                    <td>${p.name}</td>
+                    <td>${p.template}</td>
+                    <td>${texts}</td>
+                    <td>
+                        <button onclick='fillPreset(${JSON.stringify(JSON.stringify(p))})'>Ред.</button>
+                        <button onclick='delPreset(${JSON.stringify(JSON.stringify(p.name))})'>Удалить</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function loadAll() {
+            await Promise.all([loadCities(), loadFonts(), loadTemplates(), loadPresets()]);
+        }
+
+        // Auto-login if key exists
+        (async function init() {
+            const key = currentApiKey();
+            if (key) {
+                try {
+                    await fetchJSON(`${base}/fonts`);
+                    enterAppView();
+                    await loadAll();
+                    setStatus('Авторизация успешна', true);
+                } catch (e) {
+                    exitAppView();
+                }
+            } else {
+                exitAppView();
+            }
+        })();
+    </script>
+</body>
+</html>
+
+
