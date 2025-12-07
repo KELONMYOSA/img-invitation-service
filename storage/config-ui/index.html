@@ -30,6 +30,13 @@
         .tab-pane.active { display: block; }
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
         .topbar .right { display: flex; gap: 8px; align-items: center; }
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 9999; }
+        .modal { background: #fff; max-width: 90vw; max-height: 90vh; width: 1000px; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: flex-end; align-items: center; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
+        .modal-body { padding: 0; background: #111; display: flex; align-items: center; justify-content: center; }
+        .modal-body img { max-width: 100%; max-height: 88vh; display: block; }
+        .icon-btn { background: transparent; border: none; font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -142,7 +149,7 @@
                         <label>Y</label><input id="dateY" type="number" value="0">
                         <label>Шрифт</label><select id="dateFont"></select>
                         <label>Размер</label><input id="dateSize" type="number" value="40" min="1">
-                        <label>Цвет</label><input id="dateColor" type="text" value="#000000">
+                        <label>Цвет</label><input id="dateColor" type="color" value="#000000">
                     </div>
                     <div>
                         <h3>time <span class="pill">обяз.</span></h3>
@@ -150,7 +157,7 @@
                         <label>Y</label><input id="timeY" type="number" value="0">
                         <label>Шрифт</label><select id="timeFont"></select>
                         <label>Размер</label><input id="timeSize" type="number" value="40" min="1">
-                        <label>Цвет</label><input id="timeColor" type="text" value="#000000">
+                        <label>Цвет</label><input id="timeColor" type="color" value="#000000">
                     </div>
                     <div>
                         <h3>address <span class="pill">обяз.</span></h3>
@@ -158,11 +165,12 @@
                         <label>Y</label><input id="addressY" type="number" value="0">
                         <label>Шрифт</label><select id="addressFont"></select>
                         <label>Размер</label><input id="addressSize" type="number" value="40" min="1">
-                        <label>Цвет</label><input id="addressColor" type="text" value="#000000">
+                        <label>Цвет</label><input id="addressColor" type="color" value="#000000">
                     </div>
                 </div>
                 <div class="actions">
                     <button onclick="savePreset()">Сохранить/Обновить</button>
+                    <button onclick="previewPreset()">Предпросмотр</button>
                     <button onclick="clearPresetForm()">Очистить</button>
                 </div>
             </fieldset>
@@ -177,6 +185,18 @@
         </div>
 
         <div id="status" class="small"></div>
+    </div>
+
+    <!-- Modal Preview -->
+    <div id="previewModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <button class="icon-btn" title="Закрыть" onclick="closePreview()">✕</button>
+            </div>
+            <div class="modal-body">
+                <img id="previewImg" alt="preview">
+            </div>
+        </div>
     </div>
 
     <script>
@@ -443,6 +463,57 @@
                 `;
                 tbody.appendChild(tr);
             });
+        }
+        async function previewPreset() {
+            const name = document.getElementById('presetName').value.trim();
+            const template = document.getElementById('presetTemplate').value;
+            if (!name) { setStatus('Укажите название пресета', false); return; }
+            if (!template) { setStatus('Выберите картинку', false); return; }
+            const texts = ['date','time','address'].map(k => ({
+                type: k,
+                x: parseInt(document.getElementById(`${k}X`).value || '0', 10),
+                y: parseInt(document.getElementById(`${k}Y`).value || '0', 10),
+                font: document.getElementById(`${k}Font`).value,
+                size: parseInt(document.getElementById(`${k}Size`).value || '40', 10),
+                color: document.getElementById(`${k}Color`).value.trim()
+            }));
+            const payload = { name, template, texts };
+            try {
+                const res = await fetch(`${base}/presets/preview`, {
+                    method: 'POST',
+                    headers: { ...hdrs(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    const txt = await res.text();
+                    throw new Error(`${res.status}: ${txt}`);
+                }
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                showPreview(url);
+                setStatus('Предпросмотр готов', true);
+            } catch (e) {
+                setStatus(`Ошибка предпросмотра: ${e}`, false);
+            }
+        }
+        function showPreview(url) {
+            const modal = document.getElementById('previewModal');
+            const img = document.getElementById('previewImg');
+            // Revoke previous url if any
+            const prevUrl = img.getAttribute('data-url');
+            if (prevUrl) { try { URL.revokeObjectURL(prevUrl); } catch(_) {} }
+            img.src = url;
+            img.setAttribute('data-url', url);
+            modal.style.display = 'flex';
+        }
+        function closePreview() {
+            const modal = document.getElementById('previewModal');
+            const img = document.getElementById('previewImg');
+            const prevUrl = img.getAttribute('data-url');
+            if (prevUrl) { try { URL.revokeObjectURL(prevUrl); } catch(_) {} }
+            img.removeAttribute('data-url');
+            img.src = '';
+            modal.style.display = 'none';
         }
 
         async function loadAll() {

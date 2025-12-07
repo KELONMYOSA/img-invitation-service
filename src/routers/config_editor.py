@@ -3,11 +3,14 @@ import os
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import FileResponse, Response
 
 from src.config import settings
 from src.models.config_editor import City, Preset
+from src.models.invitation import InvitationForm
 from src.utils.auth import verify_api_key
+from src.utils.img_gen import _gen_invitation_img
 
 router = APIRouter(prefix="/config", tags=["Config editor"])
 
@@ -239,3 +242,26 @@ async def delete_preset(name: str):
     cfg["presets"] = new_presets
     _save_config(cfg)
     return {"ok": True}
+
+
+@router.post("/api/presets/preview", dependencies=[Depends(verify_api_key)])
+async def preview_preset(preset: Preset):
+    preview_data = InvitationForm(
+        type=preset.name,
+        date="01.01.2026",
+        time="12:00",
+        city="-",
+        address="пр. Энгельса, 100",
+        email="-",
+    )
+    template_path = os.path.join(settings.TEMPLATE_FOLDER, preset.template)
+    try:
+        texts_config = [ti.model_dump() for ti in preset.texts]
+        img_bytes = await run_in_threadpool(_gen_invitation_img, template_path, texts_config, preview_data)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))  # noqa: B904
+    except Exception as e:
+        raise HTTPException(  # noqa: B904
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to render preview: {e!s}"
+        )
+    return Response(content=img_bytes, media_type="image/jpeg")
