@@ -18,6 +18,8 @@ services:
       - redis
     networks:
       - img-invitation-network
+    volumes:
+      - ./storage:/app/storage
 
   celery-worker:
     image: img-invitation-backend
@@ -29,6 +31,8 @@ services:
     networks:
       - img-invitation-network
     command: celery -A src.celery_app worker --loglevel=info
+    volumes:
+      - ./storage:/app/storage
 
 networks:
   img-invitation-network:
